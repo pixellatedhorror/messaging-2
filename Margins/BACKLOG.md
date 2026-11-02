@@ -16,7 +16,15 @@ Fix plan:
   permission to read, so it's available far more often.
 - If the app still can't be identified, fall back to: your last *text-only* highlight (no link, no
   book info) from the last 3 hours, whatever app it came from.
-- Also cover the case where the previous highlight was left Unsorted: keep consecutive text-only
-  highlights together, so choosing a source for one offers to apply it to the others from that session.
 - Check on the phone: open a PDF highlight in the app. The line under it should read
   "Saved … from <app name>". If it has no "from …", that confirms the cause.
+
+## 2. Sort a whole sitting at once
+When you pick a source for an Unsorted highlight (on the save card or later in the app), Margins offers to
+put the other Unsorted highlights *from the same sitting* in that source too.
+- "Same sitting": Unsorted highlights from the same app, each within 3 hours of the next (a chain, so a long
+  reading session counts as one sitting).
+- Shown as a prompt after picking the source: "Also move 4 other highlights from this session (Acrobat,
+  this morning)?" with **Move all** / **Just this one**. A peek at the first line of each is shown so you can tell.
+- Only Unsorted highlights are touched; anything you already gave a source is left alone.
+- Works together with item 1: once a sitting has a source, new highlights in it go there automatically.
