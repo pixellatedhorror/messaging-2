@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Margins</string>
+    <string name="capture_label">Margins</string>
+    <string name="widget_label">Margins: highlight of the day</string>
+    <string name="widget_desc">One of your highlights, a new one each day</string>
+</resources>

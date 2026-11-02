@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Margins</title>
+<style>
+  :root {
+    --ink: #1f2a30; --muted: #6b7680; --line: #e4ded4; --bg: #f6f3ee; --card: #fffdf9;
+    --brand: #2f4858; --accent: #e07a3f; --good: #3c7d5a; --warn: #b4503a;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+  input, textarea { font: inherit; color: inherit; }
+  [hidden] { display: none !important; }
+
+  header { position: sticky; top: 0; z-index: 5; background: var(--brand); color: #fff; padding: 12px 16px 0; }
+  .bar { display: flex; align-items: center; gap: 8px; }
+  .bar h1 { font-size: 21px; margin: 0; flex: 1; letter-spacing: .2px; }
+  .iconbtn { width: 40px; height: 40px; border-radius: 20px; display: grid; place-items: center; }
+  .iconbtn:active { background: rgba(255,255,255,.15); }
+  .iconbtn svg { width: 22px; height: 22px; fill: currentColor; }
+  .stats { font-size: 13px; opacity: .8; margin: 2px 0 8px; }
+  .search { display: none; margin-bottom: 10px; }
+  .search.on { display: block; }
+  .search input { width: 100%; border: 0; border-radius: 10px; padding: 10px 12px; background: rgba(255,255,255,.95); color: var(--ink); }
+  .tabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+  .tabs button { padding: 10px 12px; border-bottom: 3px solid transparent; opacity: .75; white-space: nowrap; font-size: 15px; }
+  .tabs button.on { opacity: 1; border-color: var(--accent); font-weight: 600; }
+  .tabs .n { font-size: 12px; opacity: .8; margin-left: 3px; }
+
+  .toolbar { display: flex; justify-content: flex-end; gap: 8px; padding: 10px 14px 0; flex-wrap: wrap; }
+  .toolbar .grow { flex: 1; }
+  .pill { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--line); background: var(--card);
+    border-radius: 18px; padding: 6px 10px 6px 14px; font-size: 14px; color: var(--ink); max-width: 100%; }
+  .pill span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pill svg { width: 18px; height: 18px; fill: var(--muted); flex: none; }
+  .pill.active { background: var(--brand); border-color: var(--brand); color: #fff; }
+  .pill.active svg { fill: #fff; }
+  .pill:active { filter: brightness(.96); }
+  .opt { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 12px 6px; border-radius: 10px; font-size: 16px; }
+  .opt:active { background: #f2ece2; }
+  .opt .lbl { flex: 1; min-width: 0; }
+  .opt .lbl small { display: block; color: var(--muted); font-size: 13px; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .opt .tick { width: 22px; height: 22px; fill: var(--brand); visibility: hidden; flex: none; }
+  .opt.on { color: var(--brand); font-weight: 600; }
+  .opt.on .tick { visibility: visible; }
+  .opt .ic { width: 22px; height: 22px; fill: var(--brand); flex: none; }
+  .opt.new { color: var(--brand); font-weight: 600; }
+  .psearch { width: 100%; border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 10px 12px; margin-bottom: 6px; }
+  .psearch:focus { outline: 2px solid var(--brand); outline-offset: -1px; }
+
+  main { padding: 8px 12px 110px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; margin: 8px 0; display: block; width: 100%; text-align: left; }
+  .card:active { background: #fbf6ee; }
+  .hl .q { border-left: 3px solid var(--accent); padding: 1px 0 1px 11px; font-style: italic; font-size: 16px; line-height: 1.45;
+    display: -webkit-box; -webkit-line-clamp: 7; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-wrap; word-break: break-word; }
+  .hl .c { color: #48535b; font-size: 14px; margin-top: 7px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-wrap; }
+  .hl .c::before { content: "↳ "; color: var(--muted); }
+  .hl .src { color: var(--muted); font-size: 13.5px; margin-top: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hl .src b { color: var(--ink); font-weight: 600; }
+  .hl .src.un { font-style: italic; }
+  .row { display: flex; align-items: center; gap: 6px; margin-top: 7px; flex-wrap: wrap; }
+  .chip { font-size: 12px; padding: 2px 8px; border-radius: 10px; font-weight: 500; background: #efe9df; color: #6b5a44; }
+  .chip.k-book { background: #e8eef2; color: var(--brand); font-weight: 600; }
+  .chip.k-web { background: #fbe9dc; color: #a4521f; font-weight: 600; }
+  .chip.k-other { background: #eceae6; color: #5d6268; font-weight: 600; }
+  .date { font-size: 12.5px; color: var(--muted); margin-left: auto; }
+  .src-card .t { font-weight: 600; font-size: 16px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .src-card .m { color: var(--muted); font-size: 13.5px; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .src-card .peek { color: #48535b; font-size: 13.5px; font-style: italic; margin-top: 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .src-card.un .t { font-style: italic; color: var(--muted); }
+  .tagrow { display: flex; align-items: center; gap: 10px; }
+  .tagrow .t { flex: 1; font-weight: 600; }
+  .tagrow .n { color: var(--muted); font-size: 14px; }
+
+  .empty { text-align: center; color: var(--muted); padding: 46px 24px; }
+  .empty h2 { color: var(--ink); font-size: 19px; margin: 8px 0; }
+  .empty ol { text-align: left; display: inline-block; margin: 10px auto; padding-left: 20px; }
+  .empty li { margin: 6px 0; }
+
+  .fab { position: fixed; right: 18px; bottom: 22px; width: 58px; height: 58px; border-radius: 18px; background: var(--accent);
+    color: #fff; box-shadow: 0 6px 18px rgba(0,0,0,.22); display: grid; place-items: center; z-index: 6; }
+  .fab svg { width: 28px; height: 28px; fill: #fff; }
+
+  /* sheets */
+  .scrim { position: fixed; inset: 0; background: rgba(20,25,30,.45); z-index: 20; display: none; }
+  .scrim.on { display: block; }
+  .sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 21; background: var(--card); border-radius: 18px 18px 0 0;
+    padding: 8px 18px 22px; transform: translateY(105%); transition: transform .2s ease; max-height: 92vh; overflow-y: auto; }
+  .sheet.on { transform: none; }
+  .grab { width: 40px; height: 4px; background: #d8d0c4; border-radius: 2px; margin: 4px auto 12px; }
+  .sheet h3 { margin: 4px 0 12px; font-size: 18px; }
+  .menuitem { display: flex; gap: 14px; align-items: center; width: 100%; text-align: left; padding: 13px 4px; border-radius: 10px; }
+  .menuitem:active { background: #f2ece2; }
+  .menuitem svg { width: 22px; height: 22px; fill: var(--brand); flex: none; }
+  .menuitem small { display: block; color: var(--muted); font-size: 13px; }
+  .sep { height: 1px; background: var(--line); margin: 6px 0; }
+
+  .field { margin: 12px 0; }
+  .field > label { display: block; font-size: 12.5px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 4px; }
+  .field input, .field textarea { width: 100%; border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 10px 12px; }
+  .field input:focus, .field textarea:focus { outline: 2px solid var(--brand); outline-offset: -1px; }
+  .field textarea { min-height: 90px; resize: vertical; }
+  .field textarea.quote { font-style: italic; border-left: 3px solid var(--accent); min-height: 110px; }
+  .tinput { font-weight: 600; font-size: 17px; }
+  .seg { display: flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .seg button { flex: 1; padding: 10px 4px; font-size: 14.5px; background: #fff; }
+  .seg button + button { border-left: 1px solid var(--line); }
+  .seg button.on { background: var(--brand); color: #fff; font-weight: 600; }
+  .fromrow { display: flex; align-items: center; gap: 10px; width: 100%; border: 1px solid var(--line); background: #fff; border-radius: 12px; padding: 10px 12px; text-align: left; }
+  .fromrow:active { background: #fbf6ee; }
+  .fromrow .txt { flex: 1; min-width: 0; }
+  .fromrow .t { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fromrow .t.un { color: var(--muted); font-style: italic; font-weight: 500; }
+  .fromrow .m { color: var(--muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fromrow svg { width: 22px; height: 22px; fill: var(--muted); flex: none; }
+  .tagbox { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 6px 8px; min-height: 44px; }
+  .tagbox:focus-within { outline: 2px solid var(--brand); outline-offset: -1px; }
+  .tagbox input { flex: 1; min-width: 90px; border: 0 !important; outline: 0 !important; padding: 4px 2px !important; background: transparent !important; }
+  .tag { display: inline-flex; align-items: center; gap: 2px; background: #efe9df; color: #6b5a44; border-radius: 14px; padding: 3px 4px 3px 10px; font-size: 14px; }
+  .tag button { width: 20px; height: 20px; border-radius: 10px; display: grid; place-items: center; color: #8b7a62; font-size: 15px; line-height: 1; }
+  .sugg { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .sugg button { border: 1px dashed #c9c0b2; border-radius: 14px; padding: 3px 10px; font-size: 14px; color: var(--muted); }
+  .actions { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+  .btn { flex: 1; padding: 12px; border-radius: 12px; font-weight: 600; text-align: center; min-width: 100px; }
+  .btn.primary { background: var(--brand); color: #fff; }
+  .btn.ghost { border: 1px solid var(--line); background: #fff; }
+  .btn.danger { color: var(--warn); border: 1px solid #ecd3cc; background: #fff; }
+  .btn:disabled { opacity: .5; }
+  .meta-note { font-size: 12.5px; color: var(--muted); margin-top: 8px; }
+  .saved { font-size: 12.5px; color: var(--good); height: 16px; text-align: right; }
+  .mini { border-top: 1px solid var(--line); padding: 10px 2px; display: block; width: 100%; text-align: left; }
+  .mini:first-child { border-top: 0; }
+  .mini .q { border-left: 3px solid var(--accent); padding-left: 10px; font-style: italic; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-wrap; }
+  .mini .c { color: #48535b; font-size: 13.5px; margin-top: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .mini .c::before { content: "↳ "; color: var(--muted); }
+  .mini .d { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .confirm p { margin: 0 0 8px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <h1>Margins</h1>
+    <button class="iconbtn" id="searchBtn" aria-label="Search"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.8l-.3-.3A6.5 6.5 0 1 0 14 15.5l.3.3v.8l5 5 1.5-1.5-5-5zm-6 0a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z"/></svg></button>
+    <button class="iconbtn" id="menuBtn" aria-label="Menu"><svg viewBox="0 0 24 24"><path d="M12 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm0 6a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg></button>
+  </div>
+  <div class="stats" id="stats"></div>
+  <div class="search" id="searchBox"><input id="q" type="search" placeholder="Search highlights, notes, sources, tags…"></div>
+  <nav class="tabs" id="tabs"></nav>
+</header>
+
+<div class="toolbar" id="toolbar">
+  <button class="pill active" id="filterPill" hidden><span id="filterLbl"></span><svg viewBox="0 0 24 24"><path d="M19 6.4 17.6 5 12 10.6 6.4 5 5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12z"/></svg></button>
+  <span class="grow"></span>
+  <button class="pill" id="sortBtn"></button>
+</div>
+<main id="list"></main>
+
+<button class="fab" id="fab" aria-label="Add a highlight by hand"><svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></button>
+
+<div class="scrim" id="scrim"></div>
+
+<!-- Menu -->
+<div class="sheet" id="menuSheet">
+  <div class="grab"></div>
+  <button class="menuitem" data-act="xlsx"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8.9 18H7l2.1-3.5L7 11h1.9l1.2 2.2 1.2-2.2h1.9l-2.1 3.5 2.1 3.5h-1.9l-1.2-2.2L8.9 18z"/></svg><span>Export to Excel (.xlsx)<small>Highlights sheet + Sources sheet</small></span></button>
+  <button class="menuitem" data-act="md"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v2H8v-2zm0 4h8v2H8v-2z"/></svg><span>Export as Markdown (.md)<small>Grouped by book or article, for notes apps</small></span></button>
+  <button class="menuitem" data-act="json"><svg viewBox="0 0 24 24"><path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-7h-2zm-6 .7 2.6-2.6L17 11.5l-5 5-5-5 1.4-1.4 2.6 2.6V3h2v9.7z"/></svg><span>Full backup (.json)<small>Exact copy you can restore later</small></span></button>
+  <div class="sep"></div>
+  <button class="menuitem" data-act="import"><svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zm7-18-5 5h3v6h4V7h3l-5-5z"/></svg><span>Restore from backup…<small>Adds anything not already here. Nothing is overwritten.</small></span></button>
+  <div class="sep"></div>
+  <button class="menuitem" data-act="help"><svg viewBox="0 0 24 24"><path d="M11 18h2v-2h-2v2zm1-16a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm0-14a4 4 0 0 0-4 4h2a2 2 0 1 1 4 0c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5a4 4 0 0 0-4-4z"/></svg><span>How it works</span></button>
+</div>
+
+<!-- Generic picker -->
+<div class="sheet" id="pickSheet">
+  <div class="grab"></div>
+  <h3 id="pickTitle"></h3>
+  <input class="psearch" id="pickQ" type="search" placeholder="Search" hidden>
+  <div id="pickList"></div>
+</div>
+
+<!-- Confirm -->
+<div class="sheet confirm" id="confirmSheet">
+  <div class="grab"></div>
+  <h3 id="confirmTitle"></h3>
+  <p class="meta-note" id="confirmBody"></p>
+  <div class="actions"><button class="btn ghost" id="confirmNo">Cancel</button><button class="btn danger" id="confirmYes">Delete</button></div>
+</div>
+
+<!-- Help -->
+<div class="sheet" id="helpSheet">
+  <div class="grab"></div>
+  <h3>How Margins works</h3>
+  <ol style="padding-left:20px;margin:0">
+    <li>Select text in any app. Tap <b>Margins</b> in the menu that pops up, or tap <b>Share</b> and pick <b>Margins</b>.</li>
+    <li>It's saved at once. A card lets you add a <b>note</b>, <b>tags</b> and the <b>source</b>. Close it and the highlight stays saved.</li>
+    <li>From a browser, the page title, author and link are filled in. From Kindle and other book apps, the book and author are read from what the app shares.</li>
+    <li>If an app sends only the text (PDF readers), choose the source from your recent ones. Your next highlights from that app within 3 hours go to the same source automatically.</li>
+    <li>For a <b>daily highlight</b> on your home screen: long-press the home screen → <b>Widgets</b> → <b>Margins</b>. Tap ↻ on it for another one.</li>
+    <li>Use ⋮ → <b>Export</b> for Excel or Markdown at any time.</li>
+  </ol>
+  <p class="meta-note">Everything is stored only on this phone, in the app's private storage. There is no account and no server. The app connects to the internet only to read a web page's title and author. Make a backup before uninstalling, because uninstalling deletes the app's data.</p>
+  <div class="actions"><button class="btn primary" data-close>Got it</button></div>
+</div>
+
+<!-- Highlight editor -->
+<div class="sheet" id="editSheet">
+  <div class="grab"></div>
+  <div class="saved" id="savedNote"></div>
+  <div class="field"><label>Highlight</label><textarea class="quote" id="eText" placeholder="Type or paste the passage"></textarea></div>
+  <div class="field"><label>From</label>
+    <button class="fromrow" id="eFrom"><div class="txt"><div class="t" id="eFromT"></div><div class="m" id="eFromM"></div></div>
+      <svg viewBox="0 0 24 24"><path d="M10 6 8.6 7.4l4.6 4.6-4.6 4.6L10 18l6-6z"/></svg></button>
+  </div>
+  <div class="field"><label>Note</label><textarea id="eNote" placeholder="Your thought on this…"></textarea></div>
+  <div class="field"><label>Tags</label>
+    <div class="tagbox" id="eTagbox"><input id="eTagIn" placeholder="Add a tag" autocapitalize="none" enterkeyhint="done"></div>
+    <div class="sugg" id="eSugg"></div>
+  </div>
+  <div class="field"><label>Page / location</label><input id="eLoc" placeholder="e.g. p. 42"></div>
+  <div class="meta-note" id="eMeta"></div>
+  <div class="actions">
+    <button class="btn ghost" id="eOpen">Open at passage</button>
+    <button class="btn ghost" id="eShare">Share</button>
+    <button class="btn ghost" id="eCopy">Copy</button>
+  </div>
+  <div class="actions">
+    <button class="btn danger" id="eDelete">Delete</button>
+    <button class="btn primary" data-close>Done</button>
+  </div>
+</div>
+
+<!-- Source editor -->
+<div class="sheet" id="srcSheet">
+  <div class="grab"></div>
+  <div class="saved" id="sSaved"></div>
+  <div class="field"><label>Title</label><textarea class="tinput" id="sTitle" rows="2" style="min-height:0"></textarea></div>
+  <div class="field"><label>Author</label><input id="sAuthor" placeholder="Unknown"></div>
+  <div class="field"><label>Type</label>
+    <div class="seg" id="sKind"><button data-v="book">Book</button><button data-v="web">Web</button><button data-v="other">Other</button></div>
+  </div>
+  <div class="field"><label>Link</label><input id="sUrl" type="url" inputmode="url" placeholder="Optional"></div>
+  <div class="field"><label id="sCount">Highlights</label><div id="sList"></div></div>
+  <div class="actions">
+    <button class="btn primary" id="sShow">Show in Highlights</button>
+    <button class="btn ghost" id="sShare">Share as text</button>
+  </div>
+  <div class="actions">
+    <button class="btn ghost" id="sOpen">Open link</button>
+    <button class="btn ghost" id="sMerge">Merge into…</button>
+  </div>
+  <div class="actions">
+    <button class="btn danger" id="sDelete">Delete source</button>
+    <button class="btn ghost" data-close>Done</button>
+  </div>
+</div>
+
+<!-- New source -->
+<div class="sheet" id="newSrcSheet">
+  <div class="grab"></div>
+  <h3>New source</h3>
+  <div class="field"><label>Title</label><input class="tinput" id="nTitle" placeholder="Book, article or document"></div>
+  <div class="field"><label>Author</label><input id="nAuthor" placeholder="Optional"></div>
+  <div class="actions"><button class="btn ghost" id="nCancel">Cancel</button><button class="btn primary" id="nAdd" disabled>Add</button></div>
+</div>
+
+<!-- Tag editor -->
+<div class="sheet" id="tagSheet">
+  <div class="grab"></div>
+  <h3 id="tTitle"></h3>
+  <div class="field"><label>Rename</label><input id="tName" autocapitalize="none"></div>
+  <div class="meta-note">Renaming to a tag you already have merges the two.</div>
+  <div class="actions"><button class="btn primary" id="tShow">Show highlights</button><button class="btn ghost" id="tSave">Save name</button></div>
+  <div class="actions"><button class="btn danger" id="tDelete">Delete tag</button><button class="btn ghost" data-close>Done</button></div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  // ---------------------------------------------------------------- bridge (with an in-browser mock for testing)
+  var A = window.Android || (function () {
+    var db = { sources: [
+        { id: "s1", title: "The Waves", author: "Virginia Woolf", url: "", kind: "book", created: "2026-10-20 09:00" },
+        { id: "s2", title: "Why Poetry Matters", author: "Jay Parini", url: "https://example.com/poetry", kind: "web", created: "2026-10-28 21:10" },
+        { id: "s3", title: "Report_2024", author: "", url: "", kind: "other", created: "2026-11-01 10:00" }],
+      highlights: [
+        { id: "h1", text: "I have made up thousands of stories; I have filled innumerable notebooks with phrases to be used when I have found the true story.", note: "Bernard, on never finishing.", tags: ["writing", "craft"], sourceId: "s1", created: "2026-10-20 09:05", app: "Kindle", url: "", location: "loc. 3021" },
+        { id: "h2", text: "Poetry is a way of thinking with feeling.", note: "", tags: ["poetry"], sourceId: "s2", created: "2026-10-28 21:12", app: "Chrome", url: "https://example.com/poetry#:~:text=Poetry", location: "" },
+        { id: "h3", text: "The waves broke on the shore.", note: "", tags: [], sourceId: "", created: "2026-11-01 08:00", app: "Drive", url: "", location: "" },
+        { id: "h4", text: "Response rates fell sharply after the second mailing.", note: "Check against 2023.", tags: ["work"], sourceId: "s3", created: "2026-11-01 10:02", app: "Adobe Acrobat", url: "", location: "p. 12" }] };
+    var id = 100;
+    function find(arr, i) { return arr.find(function (x) { return x.id === i; }); }
+    return {
+      data: function () { return JSON.stringify(db); },
+      putHighlight: function (j) { var o = JSON.parse(j), h = find(db.highlights, o.id);
+        if (!h) { h = { id: o.id || "n" + (id++), created: "2026-11-02 10:00", app: "", url: "", location: "", tags: [], note: "", sourceId: "" }; db.highlights.push(h); }
+        Object.assign(h, o); return JSON.stringify(h); },
+      deleteHighlight: function (i) { db.highlights = db.highlights.filter(function (h) { return h.id !== i; }); },
+      putSource: function (j) { var o = JSON.parse(j), s = find(db.sources, o.id);
+        if (!s) { s = { id: "s" + (id++), created: "2026-11-02 10:00", title: "", author: "", url: "", kind: "book" }; db.sources.push(s); }
+        Object.assign(s, o); return JSON.stringify(s); },
+      deleteSource: function (i) { db.sources = db.sources.filter(function (s) { return s.id !== i; });
+        db.highlights.forEach(function (h) { if (h.sourceId === i) h.sourceId = ""; }); },
+      mergeSource: function (a, b) { db.highlights.forEach(function (h) { if (h.sourceId === a) h.sourceId = b; });
+        db.sources = db.sources.filter(function (s) { return s.id !== a; }); },
+      renameTag: function (a, b) { db.highlights.forEach(function (h) { h.tags = h.tags.map(function (t) { return t === a ? b : t; }).filter(Boolean)
+        .filter(function (t, i, arr) { return arr.indexOf(t) === i; }); }); },
+      markdown: function (sid) { return "# markdown for " + sid; },
+      open: function (u) { console.log("open", u); }, share: function (t) { console.log("share", t); },
+      copy: function (t) { console.log("copy", t); }, toast: function (t) { console.log("toast", t); },
+      exportAs: function (f) { console.log("export", f); }, importFile: function () {}, pendingOpen: function () { return ""; }
+    };
+  })();
+
+  var $ = function (id) { return document.getElementById(id); };
+  var TICK = '<svg class="tick" viewBox="0 0 24 24"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>';
+  var PLUS = '<svg class="ic" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>';
+  var CARET = '<svg viewBox="0 0 24 24"><path d="m7 10 5 5 5-5z"/></svg>';
+  var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  var KIND = { book: "Book", web: "Web", other: "Other" };
+  var SORTS = [["new", "Newest first"], ["old", "Oldest first"], ["source", "By source"], ["random", "Shuffle"]];
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function host(u) { return String(u || "").replace(/^https?:\/\//i, "").replace(/^www\./i, "").split(/[\/?#:]/)[0]; }
+  function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
+
+  var db = { sources: [], highlights: [] }, byId = {}, srcById = {};
+  var tab = store("tab") || "highlights", sort = store("sort") || "new";
+  var filter = null; // { type: "source"|"tag", value, label }
+  var query = "", shuffleSeed = Math.random();
+
+  function load() {
+    try { db = JSON.parse(A.data() || "{}"); } catch (e) { db = {}; }
+    db.sources = db.sources || []; db.highlights = db.highlights || [];
+    byId = {}; srcById = {};
+    db.highlights.forEach(function (h) { byId[h.id] = h; h.tags = h.tags || []; });
+    db.sources.forEach(function (s) { srcById[s.id] = s; });
+    if (filter && filter.type === "source" && filter.value && !srcById[filter.value]) filter = null;
+  }
+  function srcTitle(s) { return s ? (s.title || host(s.url) || "Untitled") : "Unsorted"; }
+  function fmtDate(c) {
+    if (!c) return "";
+    var y = +c.slice(0, 4), m = +c.slice(5, 7), d = +c.slice(8, 10);
+    return d + " " + MONTHS[m - 1] + (y !== new Date().getFullYear() ? " " + y : "");
+  }
+  function tagCounts() {
+    var m = {};
+    db.highlights.forEach(function (h) { h.tags.forEach(function (t) { m[t] = (m[t] || 0) + 1; }); });
+    return Object.keys(m).sort(function (a, b) { return m[b] - m[a] || a.localeCompare(b); }).map(function (t) { return [t, m[t]]; });
+  }
+  function lastUsed() {
+    var m = {};
+    db.sources.forEach(function (s) { m[s.id] = s.created || ""; });
+    db.highlights.forEach(function (h) { if (m[h.sourceId] !== undefined && h.created > m[h.sourceId]) m[h.sourceId] = h.created; });
+    return m;
+  }
+  function counts() { var c = {}; db.highlights.forEach(function (h) { c[h.sourceId || ""] = (c[h.sourceId || ""] || 0) + 1; }); return c; }
+  function recentSources() { var lu = lastUsed(); return db.sources.slice().sort(function (a, b) { return (lu[b.id] || "").localeCompare(lu[a.id] || ""); }); }
+
+  // ---------------------------------------------------------------- list rendering
+  function matches(h) {
+    if (filter && filter.type === "source" && (h.sourceId || "") !== filter.value) return false;
+    if (filter && filter.type === "tag" && h.tags.indexOf(filter.value) < 0) return false;
+    if (!query) return true;
+    var s = srcById[h.sourceId];
+    return [h.text, h.note, h.location, h.tags.join(" "), s ? s.title + " " + s.author + " " + host(s.url) : "unsorted"]
+      .join(" ").toLowerCase().indexOf(query) >= 0;
+  }
+  function seeded(id) { var x = 0; for (var i = 0; i < id.length; i++) x = (x * 31 + id.charCodeAt(i)) | 0; return Math.sin(x + shuffleSeed * 1e4); }
+
+  function hlCard(h, hideSource) {
+    var s = srcById[h.sourceId], src = "";
+    if (!hideSource) src = s ? '<div class="src"><b>' + esc(srcTitle(s)) + "</b>" + (s.author ? " · " + esc(s.author) : "") + "</div>"
+      : '<div class="src un">Unsorted</div>';
+    return '<button class="card hl" data-h="' + esc(h.id) + '"><div class="q">' + esc(h.text) + "</div>" +
+      (h.note ? '<div class="c">' + esc(h.note) + "</div>" : "") + src +
+      '<div class="row">' + h.tags.map(function (t) { return '<span class="chip">' + esc(t) + "</span>"; }).join("") +
+      (h.location ? '<span class="chip">' + esc(h.location) + "</span>" : "") +
+      '<span class="date">' + fmtDate(h.created) + "</span></div></button>";
+  }
+
+  function render() {
+    var hs = db.highlights, c = counts(), tc = tagCounts();
+    $("stats").textContent = hs.length ? hs.length + (hs.length === 1 ? " highlight" : " highlights") + " · " +
+      db.sources.length + (db.sources.length === 1 ? " source" : " sources") : "Your highlights from everywhere";
+    var unsorted = c[""] || 0;
+    $("tabs").innerHTML = [["highlights", "Highlights", hs.length], ["sources", "Sources", db.sources.length + (unsorted ? 1 : 0)], ["tags", "Tags", tc.length]]
+      .map(function (t) { return '<button data-tab="' + t[0] + '" class="' + (tab === t[0] ? "on" : "") + '">' + t[1] + '<span class="n">' + t[2] + "</span></button>"; }).join("");
+
+    $("filterPill").hidden = !(tab === "highlights" && filter);
+    if (filter) $("filterLbl").textContent = (filter.type === "tag" ? "Tag: " : "") + filter.label;
+    $("sortBtn").hidden = tab !== "highlights";
+    $("sortBtn").innerHTML = "<span>" + SORTS.find(function (s) { return s[0] === sort; })[1] + "</span>" + CARET;
+    $("toolbar").hidden = tab !== "highlights";
+    $("fab").hidden = tab === "tags";
+
+    var out = "";
+    if (!hs.length && !db.sources.length) {
+      out = '<div class="empty"><h2>No highlights yet</h2><ol>' +
+        "<li>Select text in Chrome, Kindle, a PDF, anywhere.</li>" +
+        "<li>Tap <b>Margins</b> in the pop-up menu, or <b>Share → Margins</b>.</li>" +
+        "<li>It's saved instantly. Add a note or tags if you like.</li></ol>" +
+        "<p>Add the Margins widget to your home screen for a highlight a day.</p></div>";
+    } else if (tab === "highlights") {
+      var xs = hs.filter(matches);
+      if (sort === "random") xs.sort(function (a, b) { return seeded(a.id) - seeded(b.id); });
+      else if (sort === "source") {
+        var lu = lastUsed();
+        xs.sort(function (a, b) {
+          var sa = a.sourceId ? lu[a.sourceId] || "" : "", sb = b.sourceId ? lu[b.sourceId] || "" : "";
+          if (a.sourceId !== b.sourceId) return (!a.sourceId) - (!b.sourceId) || sb.localeCompare(sa) || a.sourceId.localeCompare(b.sourceId);
+          return a.created.localeCompare(b.created);
+        });
+      } else xs.sort(function (a, b) { return sort === "old" ? a.created.localeCompare(b.created) : b.created.localeCompare(a.created); });
+      if (!xs.length) out = '<div class="empty">' + (query ? "Nothing matches “" + esc(query) + "”." : "No highlights here yet.") + "</div>";
+      else if (sort === "source" && !(filter && filter.type === "source")) {
+        var cur = null;
+        xs.forEach(function (h) {
+          if (h.sourceId !== cur) { cur = h.sourceId; var s = srcById[cur];
+            out += '<div style="margin:14px 4px 2px;font-weight:700;font-size:15px">' + esc(srcTitle(s)) +
+              (s && s.author ? ' <span style="font-weight:400;color:var(--muted)">· ' + esc(s.author) + "</span>" : "") + "</div>"; }
+          out += hlCard(h, true);
+        });
+      } else out = xs.map(function (h) { return hlCard(h, filter && filter.type === "source"); }).join("");
+    } else if (tab === "sources") {
+      var lu2 = lastUsed(), latest = {};
+      hs.forEach(function (h) { var k = h.sourceId || ""; if (!latest[k] || h.created > latest[k].created) latest[k] = h; });
+      var ss = recentSources().filter(function (s) {
+        return !query || (srcTitle(s) + " " + s.author + " " + host(s.url)).toLowerCase().indexOf(query) >= 0;
+      });
+      if (unsorted && (!query || "unsorted".indexOf(query) >= 0))
+        out += '<button class="card src-card un" data-s=""><div class="t">Unsorted</div><div class="m">' + unsorted +
+          (unsorted === 1 ? " highlight" : " highlights") + " without a source</div></button>";
+      out += ss.map(function (s) {
+        var n = c[s.id] || 0, l = latest[s.id];
+        return '<button class="card src-card" data-s="' + esc(s.id) + '"><div class="t">' + esc(srcTitle(s)) + "</div>" +
+          (function (m) { return m ? '<div class="m">' + esc(m) + "</div>" : ""; })([s.author, s.kind === "web" && s.title ? host(s.url) : ""].filter(Boolean).join(" · ")) +
+          (l ? '<div class="peek">' + esc(l.text) + "</div>" : "") +
+          '<div class="row"><span class="chip k-' + esc(s.kind) + '">' + (KIND[s.kind] || "Other") + "</span>" +
+          '<span class="chip">' + n + (n === 1 ? " highlight" : " highlights") + "</span>" +
+          '<span class="date">' + fmtDate(lu2[s.id]) + "</span></div></button>";
+      }).join("");
+      if (!out) out = '<div class="empty">' + (query ? "No source matches." : "No sources yet.") + "</div>";
+    } else {
+      var ts = tc.filter(function (t) { return !query || t[0].indexOf(query) >= 0; });
+      out = ts.map(function (t) {
+        return '<button class="card tagrow" data-t="' + esc(t[0]) + '"><span class="t"># ' + esc(t[0]) + '</span><span class="n">' + t[1] + "</span></button>";
+      }).join("") || '<div class="empty">' + (query ? "No tag matches." : "No tags yet.<br>Add tags to a highlight when you save it, or later by tapping it.") + "</div>";
+    }
+    $("list").innerHTML = out;
+  }
+
+  // ---------------------------------------------------------------- sheets
+  var stack = [];
+  // Sheets stack: each one opens above the last, with the dimmed backdrop just beneath the top one.
+  function openSheet(id) {
+    var el = $(id);
+    stack.push(id);
+    el.style.zIndex = 20 + stack.length * 2 + 1;
+    $("scrim").style.zIndex = 20 + stack.length * 2;
+    $("scrim").classList.add("on");
+    el.classList.add("on"); el.scrollTop = 0;
+  }
+  function closeSheet() {
+    var id = stack.pop(); if (!id) return;
+    $(id).classList.remove("on");
+    if (id === "editSheet") flushEdit();
+    if (id === "srcSheet") flushSrc();
+    if (stack.length) $("scrim").style.zIndex = 20 + stack.length * 2;
+    else { $("scrim").classList.remove("on"); load(); render(); }
+    if (stack[stack.length - 1] === "srcSheet" && srcEditing) { load(); paintSrcList(); }
+  }
+  function closeAll() { while (stack.length) closeSheet(); }
+  $("scrim").onclick = closeSheet;
+  document.addEventListener("click", function (e) { if (e.target.closest("[data-close]")) closeSheet(); });
+
+  // generic picker: items [{v, label, sub, on, cls, html}]
+  var pickCb = null, pickItems = [];
+  function pick(title, items, cb, searchable) {
+    $("pickTitle").textContent = title; pickCb = cb; pickItems = items;
+    $("pickQ").value = ""; $("pickQ").hidden = !searchable;
+    paintPick(); openSheet("pickSheet");
+  }
+  function paintPick() {
+    var q = $("pickQ").value.trim().toLowerCase();
+    $("pickList").innerHTML = pickItems.filter(function (it) { return !q || it.always || (it.label + " " + (it.sub || "")).toLowerCase().indexOf(q) >= 0; })
+      .map(function (it, i) {
+        return '<button class="opt ' + (it.on ? "on " : "") + (it.cls || "") + '" data-i="' + pickItems.indexOf(it) + '">' + (it.icon || "") +
+          '<span class="lbl">' + esc(it.label) + (it.sub ? "<small>" + esc(it.sub) + "</small>" : "") + "</span>" + TICK + "</button>";
+      }).join("") || '<div class="meta-note" style="padding:10px 6px">Nothing matches.</div>';
+  }
+  $("pickQ").oninput = paintPick;
+  $("pickList").onclick = function (e) {
+    var b = e.target.closest("[data-i]"); if (!b) return;
+    var it = pickItems[+b.dataset.i], cb = pickCb; closeSheet(); cb && cb(it.v);
+  };
+
+  var confirmCb = null;
+  function confirmBox(title, body, yes, cb) {
+    $("confirmTitle").textContent = title; $("confirmBody").textContent = body; $("confirmYes").textContent = yes || "Delete";
+    confirmCb = cb; openSheet("confirmSheet");
+  }
+  $("confirmNo").onclick = closeSheet;
+  $("confirmYes").onclick = function () { var cb = confirmCb; closeSheet(); cb && cb(); };
+
+  function sourceItems(currentId) {
+    var c = counts();
+    var items = [{ v: "__new", label: "New source", icon: PLUS, cls: "new", always: true },
+                 { v: "", label: "Unsorted", sub: "No source", on: !currentId }];
+    recentSources().forEach(function (s) {
+      var n = c[s.id] || 0;
+      items.push({ v: s.id, label: srcTitle(s), sub: [s.author, n + (n === 1 ? " highlight" : " highlights")].filter(Boolean).join(" · "), on: s.id === currentId });
+    });
+    return items;
+  }
+  var newSrcCb = null;
+  function newSource(cb, prefill) {
+    newSrcCb = cb; $("nTitle").value = prefill || ""; $("nAuthor").value = ""; $("nAdd").disabled = !prefill;
+    openSheet("newSrcSheet"); setTimeout(function () { $("nTitle").focus(); }, 60);
+  }
+  $("nTitle").oninput = function () { $("nAdd").disabled = !this.value.trim(); };
+  $("nCancel").onclick = closeSheet;
+  $("nAdd").onclick = function () {
+    var r = A.putSource(JSON.stringify({ title: $("nTitle").value.trim(), author: $("nAuthor").value.trim(), kind: "book" }));
+    var cb = newSrcCb; closeSheet(); load();
+    if (r && cb) cb(JSON.parse(r).id);
+  };
+
+  // ---------------------------------------------------------------- tag editor widget (used in the highlight editor)
+  function TagEditor(box, input, sugg, onChange) {
+    var self = this; this.tags = [];
+    this.paint = function () {
+      Array.prototype.slice.call(box.querySelectorAll(".tag")).forEach(function (n) { n.remove(); });
+      self.tags.forEach(function (t, i) {
+        var c = document.createElement("span"); c.className = "tag";
+        c.innerHTML = esc(t) + '<button aria-label="Remove ' + esc(t) + '" data-i="' + i + '">×</button>';
+        box.insertBefore(c, input);
+      });
+      input.placeholder = self.tags.length ? "" : "Add a tag";
+      var q = input.value.trim().toLowerCase().replace(/^#/, "");
+      var all = tagCounts().map(function (t) { return t[0]; });
+      sugg.innerHTML = all.filter(function (t) { return self.tags.indexOf(t) < 0 && (!q || t.indexOf(q) === 0); }).slice(0, q ? 8 : 6)
+        .map(function (t) { return '<button data-t="' + esc(t) + '">+ ' + esc(t) + "</button>"; }).join("");
+    };
+    this.add = function (t) {
+      t = String(t || "").trim().replace(/^#+/, "").trim().toLowerCase().replace(/\s+/g, " ");
+      if (t && self.tags.indexOf(t) < 0) { self.tags.push(t); onChange(); }
+      input.value = ""; self.paint();
+    };
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === ",") { e.preventDefault(); self.add(input.value); }
+      else if (e.key === "Backspace" && !input.value && self.tags.length) { self.tags.pop(); onChange(); self.paint(); }
+    });
+    input.addEventListener("input", function () {
+      if (/,/.test(input.value)) { var parts = input.value.split(","); parts.slice(0, -1).forEach(self.add); input.value = parts.pop(); }
+      self.paint();
+    });
+    input.addEventListener("blur", function () { if (input.value.trim()) self.add(input.value); });
+    box.addEventListener("click", function (e) {
+      var b = e.target.closest("[data-i]");
+      if (b) { self.tags.splice(+b.dataset.i, 1); onChange(); self.paint(); return; }
+      input.focus();
+    });
+    sugg.addEventListener("click", function (e) { var b = e.target.closest("[data-t]"); if (b) self.add(b.dataset.t); });
+  }
+
+  // ---------------------------------------------------------------- highlight editor
+  var editing = null, editTimer = null;
+  var tagEd = new TagEditor($("eTagbox"), $("eTagIn"), $("eSugg"), function () { saveEdit(true); });
+
+  function openEditor(h) {
+    editing = JSON.parse(JSON.stringify(h || { id: "", text: "", note: "", tags: [], sourceId: filter && filter.type === "source" ? filter.value : "", location: "", url: "", created: "", app: "" }));
+    if (!h && filter && filter.type === "tag") editing.tags = [filter.value];
+    $("eText").value = editing.text; $("eNote").value = editing.note; $("eLoc").value = editing.location || "";
+    tagEd.tags = editing.tags.slice(); $("eTagIn").value = ""; tagEd.paint();
+    paintEditFrom(); paintEditMeta();
+    $("savedNote").textContent = "";
+    openSheet("editSheet");
+    if (!h) setTimeout(function () { $("eText").focus(); }, 80);
+  }
+  function paintEditFrom() {
+    var s = srcById[editing.sourceId];
+    $("eFromT").textContent = srcTitle(s); $("eFromT").className = "t" + (s ? "" : " un");
+    $("eFromM").textContent = s ? [s.author, KIND[s.kind]].filter(Boolean).join(" · ") : "Tap to choose";
+  }
+  function paintEditMeta() {
+    var s = srcById[editing.sourceId];
+    var link = editing.url || (s && s.url) || "";
+    $("eOpen").hidden = !link;
+    $("eOpen").textContent = editing.url && /#:~:text=/.test(editing.url) ? "Open at passage" : s && s.kind === "book" ? "Open in book app" : "Open page";
+    $("eDelete").hidden = !editing.id;
+    $("eShare").hidden = $("eCopy").hidden = !editing.id;
+    $("eMeta").textContent = editing.created ? "Saved " + fmtDate(editing.created) + " " + editing.created.slice(11) + (editing.app ? " from " + editing.app : "") : "";
+  }
+  function saveEdit(now) {
+    clearTimeout(editTimer);
+    if (!now) { editTimer = setTimeout(function () { saveEdit(true); }, 500); return; }
+    editTimer = null;
+    if (!editing) return;
+    var text = $("eText").value.trim();
+    if (!text && !editing.id) return; // a new highlight isn't created until it has text
+    if (!text) { $("savedNote").textContent = "A highlight needs some text"; return; }
+    editing.text = text; editing.note = $("eNote").value; editing.location = $("eLoc").value; editing.tags = tagEd.tags.slice();
+    var r = A.putHighlight(JSON.stringify({ id: editing.id, text: editing.text, note: editing.note, tags: editing.tags, sourceId: editing.sourceId, location: editing.location }));
+    if (r) { var o = JSON.parse(r); editing.id = o.id; editing.created = o.created; editing.app = o.app; editing.url = o.url; $("savedNote").textContent = "Saved"; paintEditMeta(); }
+  }
+  function flushEdit() { if (editTimer) saveEdit(true); if ($("eTagIn").value.trim()) tagEd.add($("eTagIn").value); editing = null; }
+  ["eText", "eNote", "eLoc"].forEach(function (id) { $(id).addEventListener("input", function () { $("savedNote").textContent = ""; saveEdit(); }); });
+  $("eFrom").onclick = function () {
+    pick("Where is this from?", sourceItems(editing.sourceId), function (v) {
+      if (v === "__new") { newSource(function (id) { editing.sourceId = id; saveEdit(true); paintEditFrom(); paintEditMeta(); }); return; }
+      editing.sourceId = v; saveEdit(true); paintEditFrom(); paintEditMeta();
+    }, db.sources.length > 6);
+  };
+  function shareText(h) {
+    var s = srcById[h.sourceId], by = s ? "— " + srcTitle(s) + (s.author ? ", " + s.author : "") : "";
+    return "“" + h.text + "”" + (by ? "\n" + by : "") + (h.note ? "\n\n" + h.note : "");
+  }
+  $("eOpen").onclick = function () { var s = srcById[editing.sourceId]; A.open(editing.url || (s && s.url) || ""); };
+  $("eShare").onclick = function () { saveEdit(true); A.share(shareText(editing)); };
+  $("eCopy").onclick = function () { saveEdit(true); A.copy(shareText(editing)); };
+  $("eDelete").onclick = function () {
+    confirmBox("Delete this highlight?", "“" + editing.text.slice(0, 140) + (editing.text.length > 140 ? "…" : "") + "”", "Delete", function () {
+      A.deleteHighlight(editing.id); editing = null; clearTimeout(editTimer); editTimer = null; closeSheet();
+    });
+  };
+
+  // ---------------------------------------------------------------- source editor
+  var srcEditing = null, srcTimer = null;
+  function openSource(id) {
+    if (!id) { filter = { type: "source", value: "", label: "Unsorted" }; tab = "highlights"; store("tab", tab); render(); window.scrollTo(0, 0); return; }
+    var s = srcById[id]; if (!s) return;
+    srcEditing = JSON.parse(JSON.stringify(s));
+    $("sTitle").value = s.title; $("sAuthor").value = s.author; $("sUrl").value = s.url;
+    paintKind(); paintSrcList(); $("sSaved").textContent = "";
+    openSheet("srcSheet");
+  }
+  function paintKind() { Array.prototype.forEach.call($("sKind").children, function (b) { b.classList.toggle("on", b.dataset.v === srcEditing.kind); }); }
+  function paintSrcList() {
+    var xs = db.highlights.filter(function (h) { return h.sourceId === srcEditing.id; }).sort(function (a, b) { return a.created.localeCompare(b.created); });
+    $("sCount").textContent = xs.length + (xs.length === 1 ? " highlight" : " highlights");
+    $("sList").innerHTML = xs.map(function (h) {
+      return '<button class="mini" data-h="' + esc(h.id) + '"><div class="q">' + esc(h.text) + "</div>" + (h.note ? '<div class="c">' + esc(h.note) + "</div>" : "") +
+        '<div class="d">' + fmtDate(h.created) + (h.location ? " · " + esc(h.location) : "") + "</div></button>";
+    }).join("") || '<div class="meta-note">None yet.</div>';
+    $("sOpen").hidden = !$("sUrl").value.trim();
+    $("sShare").hidden = $("sShow").hidden = !xs.length;
+    $("sMerge").hidden = db.sources.length < 2;
+  }
+  function saveSrc(now) {
+    clearTimeout(srcTimer);
+    if (!now) { srcTimer = setTimeout(function () { saveSrc(true); }, 500); return; }
+    srcTimer = null; if (!srcEditing) return;
+    srcEditing.title = $("sTitle").value.replace(/\s+/g, " ").trim(); srcEditing.author = $("sAuthor").value.trim(); srcEditing.url = $("sUrl").value.trim();
+    var r = A.putSource(JSON.stringify(srcEditing));
+    if (r) { srcById[srcEditing.id] = JSON.parse(r); $("sSaved").textContent = "Saved"; }
+    $("sOpen").hidden = !srcEditing.url;
+  }
+  function flushSrc() { if (srcTimer) saveSrc(true); srcEditing = null; }
+  ["sTitle", "sAuthor", "sUrl"].forEach(function (id) { $(id).addEventListener("input", function () { $("sSaved").textContent = ""; saveSrc(); }); });
+  $("sKind").onclick = function (e) { var b = e.target.closest("[data-v]"); if (!b) return; srcEditing.kind = b.dataset.v; paintKind(); saveSrc(true); };
+  $("sList").onclick = function (e) { var b = e.target.closest("[data-h]"); if (b) { saveSrc(true); openEditorTop(byId[b.dataset.h]); } };
+  $("sShow").onclick = function () {
+    var s = srcEditing; saveSrc(true);
+    filter = { type: "source", value: s.id, label: s.title || host(s.url) || "Untitled" }; tab = "highlights"; store("tab", tab);
+    closeAll(); window.scrollTo(0, 0);
+  };
+  $("sShare").onclick = function () { saveSrc(true); A.share(A.markdown(srcEditing.id)); };
+  $("sOpen").onclick = function () { A.open($("sUrl").value.trim()); };
+  $("sMerge").onclick = function () {
+    saveSrc(true);
+    var from = srcEditing, items = sourceItems("").filter(function (it) { return it.v && it.v !== "__new" && it.v !== from.id; });
+    pick("Merge “" + srcTitle(from) + "” into…", items, function (into) {
+      confirmBox("Merge sources?", "All highlights from “" + srcTitle(from) + "” move to “" + srcTitle(srcById[into]) + "”, and “" + srcTitle(from) + "” is removed.", "Merge", function () {
+        A.mergeSource(from.id, into); srcEditing = null; closeAll();
+      });
+    }, items.length > 6);
+  };
+  $("sDelete").onclick = function () {
+    var s = srcEditing, n = db.highlights.filter(function (h) { return h.sourceId === s.id; }).length;
+    confirmBox("Delete “" + srcTitle(s) + "”?", n ? "Its " + n + (n === 1 ? " highlight stays" : " highlights stay") + " in Margins, under Unsorted." : "It has no highlights.", "Delete", function () {
+      clearTimeout(srcTimer); srcTimer = null; A.deleteSource(s.id); srcEditing = null; closeAll();
+    });
+  };
+  // Opening a highlight from inside the source sheet: refresh data, then stack the editor on top.
+  function openEditorTop(h) { load(); openEditor(byId[h.id] || h); }
+
+  // ---------------------------------------------------------------- tag sheet
+  var tagEditing = null;
+  function openTag(t) { tagEditing = t; $("tTitle").textContent = "# " + t; $("tName").value = t; openSheet("tagSheet"); }
+  $("tShow").onclick = function () { filter = { type: "tag", value: tagEditing, label: tagEditing }; tab = "highlights"; store("tab", tab); closeAll(); window.scrollTo(0, 0); };
+  $("tSave").onclick = function () {
+    var n = $("tName").value.trim().replace(/^#+/, "").trim().toLowerCase().replace(/\s+/g, " ");
+    if (!n || n === tagEditing) { closeSheet(); return; }
+    A.renameTag(tagEditing, n); A.toast("Renamed to “" + n + "”"); closeSheet();
+  };
+  $("tDelete").onclick = function () {
+    var t = tagEditing, n = db.highlights.filter(function (h) { return h.tags.indexOf(t) >= 0; }).length;
+    confirmBox("Delete tag “" + t + "”?", "It's removed from " + n + (n === 1 ? " highlight" : " highlights") + ". The highlights themselves stay.", "Delete", function () {
+      A.renameTag(t, ""); closeAll();
+    });
+  };
+
+  // ---------------------------------------------------------------- wiring
+  $("tabs").onclick = function (e) {
+    var b = e.target.closest("[data-tab]"); if (!b) return;
+    tab = b.dataset.tab; store("tab", tab); render(); window.scrollTo(0, 0);
+  };
+  $("list").onclick = function (e) {
+    var b = e.target.closest("[data-h],[data-s],[data-t]"); if (!b) return;
+    if (b.dataset.h !== undefined) openEditor(byId[b.dataset.h]);
+    else if (b.dataset.s !== undefined) openSource(b.dataset.s);
+    else openTag(b.dataset.t);
+  };
+  $("filterPill").onclick = function () { filter = null; render(); };
+  $("sortBtn").onclick = function () {
+    pick("Sort", SORTS.map(function (s) { return { v: s[0], label: s[1], on: s[0] === sort }; }), function (v) {
+      if (v === "random") shuffleSeed = Math.random();
+      sort = v; store("sort", v); render(); window.scrollTo(0, 0);
+    });
+  };
+  $("searchBtn").onclick = function () {
+    var on = $("searchBox").classList.toggle("on");
+    if (on) $("q").focus(); else { $("q").value = ""; query = ""; render(); }
+  };
+  $("q").oninput = function () { query = this.value.trim().toLowerCase(); render(); };
+  $("menuBtn").onclick = function () { openSheet("menuSheet"); };
+  $("menuSheet").onclick = function (e) {
+    var b = e.target.closest("[data-act]"); if (!b) return;
+    var act = b.dataset.act; closeSheet();
+    if (act === "help") openSheet("helpSheet");
+    else if (act === "import") A.importFile();
+    else A.exportAs(act);
+  };
+  $("fab").onclick = function () {
+    if (tab === "sources") newSource(function (id) { load(); render(); openSource(id); });
+    else openEditor(null);
+  };
+
+  window.handleBack = function () {
+    if (stack.length) { closeSheet(); return true; }
+    if ($("searchBox").classList.contains("on")) { $("searchBtn").click(); return true; }
+    if (filter) { filter = null; render(); return true; }
+    return false;
+  };
+  window.onDataChanged = function () {
+    load();
+    if (!stack.length) render();
+  };
+  window.openHighlight = function (id) {
+    load(); render();
+    if (byId[id]) { closeAll(); openEditor(byId[id]); }
+  };
+
+  load(); render();
+  var p = A.pendingOpen && A.pendingOpen();
+  if (p) window.openHighlight(p);
+})();
+</script>
+</body>
+</html>

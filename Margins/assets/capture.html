@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<style>
+  :root { --ink:#1f2a30; --muted:#6b7680; --line:#e4ded4; --card:#fffdf9; --brand:#2f4858; --accent:#e07a3f; --good:#3c7d5a; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; background: transparent; color: var(--ink);
+    font: 16px/1.4 system-ui, -apple-system, Roboto, sans-serif; }
+  button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-align: left; }
+  input, textarea { font: inherit; color: inherit; }
+  [hidden] { display: none !important; }
+  .scrim { position: fixed; inset: 0; background: rgba(20,25,30,.35); }
+  .card { position: fixed; left: 0; right: 0; bottom: 0; background: var(--card); border-radius: 18px 18px 0 0;
+    padding: 10px 18px 18px; box-shadow: 0 -6px 24px rgba(0,0,0,.18); max-height: 88vh; overflow-y: auto;
+    animation: up .18s ease-out; }
+  @keyframes up { from { transform: translateY(40px); opacity: .4; } }
+  .grab { width: 40px; height: 4px; background: #d8d0c4; border-radius: 2px; margin: 2px auto 10px; }
+
+  .savedbar { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .savedbar .ok { width: 24px; height: 24px; border-radius: 12px; background: var(--good); display: grid; place-items: center; flex: none; }
+  .savedbar .ok svg { width: 16px; height: 16px; fill: #fff; }
+  .savedbar b { flex: 1; font-size: 16px; }
+  .undo { color: var(--muted); font-size: 14px; padding: 6px 10px; border-radius: 8px; }
+  .undo:active { background: #f2ece2; }
+
+  .lab { font-size: 12.5px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .4px; margin: 14px 0 6px; }
+  .quote { border-left: 3px solid var(--accent); padding: 4px 0 4px 12px; font-style: italic; font-size: 16.5px;
+    max-height: 24vh; overflow-y: auto; white-space: pre-wrap; outline: none; }
+  .quote:focus { background: #fbf6ee; }
+
+  .from { display: flex; align-items: center; gap: 10px; width: 100%; border: 1px solid var(--line); background: #fff;
+    border-radius: 14px; padding: 11px 12px 11px 14px; }
+  .from:active { background: #fbf6ee; }
+  .from .txt { flex: 1; min-width: 0; }
+  .t { font-weight: 600; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word; }
+  .t.unsorted { color: var(--muted); font-weight: 500; font-style: italic; }
+  .m { color: var(--muted); font-size: 13.5px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .from svg { width: 22px; height: 22px; fill: var(--muted); flex: none; }
+  .hint { font-size: 13px; color: var(--muted); margin-top: 6px; }
+
+  .addc { display: block; width: 100%; text-align: center; margin-top: 12px; color: var(--brand); font-weight: 600;
+    border: 1px dashed #c9c0b2; border-radius: 12px; padding: 11px; }
+  textarea, .tinput { width: 100%; border: 1px solid var(--line); background: #fff; border-radius: 12px; padding: 10px 12px; }
+  textarea { min-height: 84px; resize: vertical; }
+  textarea:focus, .tinput:focus, .search:focus { outline: 2px solid var(--brand); outline-offset: -1px; }
+
+  /* tags */
+  .tagbox { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; border: 1px solid var(--line); background: #fff;
+    border-radius: 12px; padding: 6px 8px; min-height: 44px; }
+  .tagbox:focus-within { outline: 2px solid var(--brand); outline-offset: -1px; }
+  .tagbox input { flex: 1; min-width: 90px; border: 0; outline: 0; padding: 4px 2px; background: transparent; }
+  .tag { display: inline-flex; align-items: center; gap: 2px; background: #efe9df; color: #6b5a44; border-radius: 14px;
+    padding: 3px 4px 3px 10px; font-size: 14px; }
+  .tag button { width: 20px; height: 20px; border-radius: 10px; display: grid; place-items: center; color: #8b7a62; font-size: 15px; line-height: 1; text-align: center; }
+  .sugg { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .sugg button { border: 1px dashed #c9c0b2; border-radius: 14px; padding: 3px 10px; font-size: 14px; color: var(--muted); }
+  .sugg button:active { background: #f2ece2; }
+
+  .row { display: flex; gap: 8px; margin-top: 18px; }
+  .btn { flex: 1; text-align: center; padding: 12px; border-radius: 12px; font-weight: 600; border: 1px solid var(--line); background: #fff; }
+  .btn.primary { background: var(--brand); color: #fff; border-color: var(--brand); }
+  .btn:disabled { opacity: .5; }
+
+  /* picker view */
+  .phead { display: flex; align-items: center; gap: 6px; margin: 0 0 10px -6px; }
+  .phead button { width: 40px; height: 40px; border-radius: 20px; display: grid; place-items: center; }
+  .phead button:active { background: #f2ece2; }
+  .phead svg { width: 22px; height: 22px; fill: var(--ink); }
+  .phead h3 { margin: 0; font-size: 18px; }
+  .search { width: 100%; border: 1px solid var(--line); background: #fff; border-radius: 12px; padding: 10px 12px; margin-bottom: 4px; }
+  .sec { font-size: 12.5px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .4px; margin: 14px 4px 4px; }
+  .opt { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 6px; border-radius: 12px; }
+  .opt:active { background: #f2ece2; }
+  .opt .txt { flex: 1; min-width: 0; }
+  .opt .tick { width: 22px; height: 22px; fill: var(--brand); visibility: hidden; flex: none; }
+  .opt.on .t { color: var(--brand); }
+  .opt.on .tick { visibility: visible; }
+  .opt.new .t { color: var(--brand); }
+  .ic { width: 22px; height: 22px; fill: var(--brand); flex: none; }
+  .ic.mut { fill: var(--muted); }
+  .none { color: var(--muted); padding: 16px 6px; }
+  .field { margin: 12px 0; }
+  .field label { display: block; font-size: 12.5px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+<div class="scrim" id="scrim"></div>
+<div class="card" id="card">
+  <div class="grab"></div>
+
+  <div id="mainView">
+    <div class="savedbar">
+      <span class="ok"><svg viewBox="0 0 24 24"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg></span>
+      <b id="savedT">Saved to Margins</b>
+      <button class="undo" id="undo">Undo</button>
+    </div>
+    <div class="quote" id="quote" contenteditable="true"></div>
+
+    <div class="lab">From</div>
+    <button class="from" id="from">
+      <div class="txt"><div class="t" id="fromT"></div><div class="m" id="fromM"></div></div>
+      <svg viewBox="0 0 24 24"><path d="M10 6 8.6 7.4l4.6 4.6-4.6 4.6L10 18l6-6z"/></svg>
+    </button>
+    <div class="hint" id="hint" hidden></div>
+
+    <button class="addc" id="addNote">+ Add note</button>
+    <div id="noteBox" hidden><div class="lab">Note</div><textarea id="note" placeholder="Your thought on this…"></textarea></div>
+
+    <div class="lab">Tags</div>
+    <div class="tagbox" id="tagbox"><input id="tagIn" placeholder="Add a tag" autocapitalize="none" enterkeyhint="done"></div>
+    <div class="sugg" id="sugg"></div>
+
+    <div class="row"><button class="btn primary" id="done">Done</button></div>
+  </div>
+
+  <div id="pickView" hidden>
+    <div class="phead">
+      <button class="backb" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M20 11H7.8l5.6-5.6L12 4l-8 8 8 8 1.4-1.4L7.8 13H20z"/></svg></button>
+      <h3>Where is this from?</h3>
+    </div>
+    <input class="search" id="q" type="search" placeholder="Search your sources" hidden>
+    <div id="list"></div>
+  </div>
+
+  <div id="newView" hidden>
+    <div class="phead">
+      <button class="backb" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M20 11H7.8l5.6-5.6L12 4l-8 8 8 8 1.4-1.4L7.8 13H20z"/></svg></button>
+      <h3>New source</h3>
+    </div>
+    <div class="field"><label>Title</label><input class="tinput" id="nTitle" placeholder="Book, article or document"></div>
+    <div class="field"><label>Author</label><input class="tinput" id="nAuthor" placeholder="Optional"></div>
+    <div class="row"><button class="btn" id="nCancel">Cancel</button><button class="btn primary" id="nAdd" disabled>Add</button></div>
+  </div>
+</div>
+<script>
+(function () {
+  var A = window.Android || {
+    init: function () { return JSON.stringify({
+      highlight: { id: "h1", text: "So much depends upon a red wheel barrow glazed with rain water.", note: "", tags: [], sourceId: "" },
+      source: null, duplicate: false, guessed: false, app: "Adobe Acrobat",
+      sources: [{ id: "s1", title: "Spring and All", author: "William Carlos Williams", kind: "book", n: 4 },
+                { id: "s2", title: "The Waves", author: "Virginia Woolf", kind: "book", n: 12 },
+                { id: "s3", title: "Why we read", author: "", url: "https://example.com/why", kind: "web", n: 1 }],
+      tags: ["craft", "imagery", "grief", "rhythm", "nature"] }); },
+    update: function (j) { console.log("update", j); return j; },
+    newSource: function (t, a) { return JSON.stringify({ id: "s" + Date.now(), title: t, author: a, kind: "book" }); },
+    undo: function () { console.log("undo"); }, close: function () { console.log("close"); } };
+  var $ = function (id) { return document.getElementById(id); };
+  var TICK = '<svg class="tick" viewBox="0 0 24 24"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>';
+  var PLUS = '<svg class="ic" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>';
+  var INBOX = '<svg class="ic mut" viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 12h-4a3 3 0 0 1-6 0H5V5h14v10z"/></svg>';
+  function esc(s) { return String(s || "").replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function host(u) { return String(u || "").replace(/^https?:\/\//i, "").replace(/^www\./i, "").split(/[\/?#:]/)[0]; }
+  function srcTitle(s) { return s.title || host(s.url) || "Untitled"; }
+
+  var d = JSON.parse(A.init() || "{}");
+  var h = d.highlight || {}, sources = d.sources || [], allTags = d.tags || [];
+  var tags = (h.tags || []).slice();
+  var gone = false;
+
+  // ---------- saving: every change is written straight away (debounced while typing)
+  var timer = null;
+  function payload() {
+    return JSON.stringify({ text: $("quote").innerText.trim() || h.text, note: $("note").value, tags: tags, sourceId: h.sourceId || "" });
+  }
+  function save(now) {
+    if (gone) return;
+    clearTimeout(timer);
+    if (now) { var r = A.update(payload()); if (r) h = JSON.parse(r); return; }
+    timer = setTimeout(function () { save(true); }, 500);
+  }
+  window.flush = function () { if (timer) save(true); return true; };
+
+  // ---------- main view
+  $("quote").textContent = h.text || "";
+  if (d.duplicate) $("savedT").textContent = "Already in Margins";
+  if (h.note) { $("note").value = h.note; $("noteBox").hidden = false; $("addNote").hidden = true; }
+
+  function current() { return sources.find(function (s) { return s.id === h.sourceId; }); }
+  function paintFrom() {
+    var s = current();
+    if (s) {
+      $("fromT").textContent = srcTitle(s); $("fromT").className = "t";
+      var meta = [s.author, s.kind === "web" && s.title ? host(s.url) : ""].filter(Boolean).join(" · ");
+      $("fromM").textContent = meta; $("fromM").hidden = !meta;
+    } else {
+      $("fromT").textContent = "Unsorted"; $("fromT").className = "t unsorted";
+      $("fromM").textContent = "Tap to choose a book or article"; $("fromM").hidden = false;
+    }
+    var hint = "";
+    if (d.guessed && s) hint = "Same as your last highlight" + (d.app ? " from " + d.app : "") + ". Tap to change.";
+    $("hint").textContent = hint; $("hint").hidden = !hint;
+  }
+  window.onSource = function (s) {
+    var i = sources.findIndex(function (x) { return x.id === s.id; });
+    if (i >= 0) sources[i] = Object.assign(sources[i], s); else sources.unshift(s);
+    paintFrom();
+  };
+
+  $("quote").addEventListener("input", function () { save(); });
+  $("note").addEventListener("input", function () { save(); });
+  $("addNote").onclick = function () { $("addNote").hidden = true; $("noteBox").hidden = false; $("note").focus(); };
+
+  // ---------- tags
+  function paintTags() {
+    var box = $("tagbox"), input = $("tagIn");
+    Array.prototype.slice.call(box.querySelectorAll(".tag")).forEach(function (n) { n.remove(); });
+    tags.forEach(function (t, i) {
+      var c = document.createElement("span"); c.className = "tag";
+      c.innerHTML = esc(t) + '<button aria-label="Remove ' + esc(t) + '" data-i="' + i + '">×</button>';
+      box.insertBefore(c, input);
+    });
+    input.placeholder = tags.length ? "" : "Add a tag";
+    var q = input.value.trim().toLowerCase().replace(/^#/, "");
+    var s = allTags.filter(function (t) { return tags.indexOf(t) < 0 && (!q || t.indexOf(q) === 0); }).slice(0, q ? 8 : 6);
+    $("sugg").innerHTML = s.map(function (t) { return '<button data-t="' + esc(t) + '">+ ' + esc(t) + "</button>"; }).join("");
+  }
+  function addTag(t) {
+    t = String(t || "").trim().replace(/^#+/, "").trim().toLowerCase().replace(/\s+/g, " ");
+    if (t && tags.indexOf(t) < 0) { tags.push(t); save(true); }
+    $("tagIn").value = ""; paintTags();
+  }
+  $("tagIn").addEventListener("keydown", function (e) {
+    if (e.key === "Enter" || e.key === ",") { e.preventDefault(); addTag(this.value); }
+    else if (e.key === "Backspace" && !this.value && tags.length) { tags.pop(); save(true); paintTags(); }
+  });
+  $("tagIn").addEventListener("input", function () {
+    if (/,/.test(this.value)) { this.value.split(",").forEach(function (p, i, arr) { if (i < arr.length - 1) addTag(p); }); this.value = this.value.split(",").pop(); }
+    paintTags();
+  });
+  $("tagIn").addEventListener("blur", function () { if (this.value.trim()) addTag(this.value); });
+  $("tagbox").onclick = function (e) {
+    var b = e.target.closest("[data-i]");
+    if (b) { tags.splice(+b.dataset.i, 1); save(true); paintTags(); return; }
+    $("tagIn").focus();
+  };
+  $("sugg").onclick = function (e) { var b = e.target.closest("[data-t]"); if (b) { addTag(b.dataset.t); } };
+
+  // ---------- source picker
+  function paintList() {
+    var q = $("q").value.trim().toLowerCase(), out = "";
+    if (!q) {
+      out += '<button class="opt new" data-act="new">' + PLUS + '<div class="txt"><div class="t">New source</div></div></button>';
+      out += '<button class="opt' + (!h.sourceId ? " on" : "") + '" data-id="">' + INBOX +
+        '<div class="txt"><div class="t">Unsorted</div><div class="m">Decide later in the app</div></div>' + TICK + "</button>";
+    }
+    var xs = sources.filter(function (s) {
+      return !q || (srcTitle(s) + " " + (s.author || "")).toLowerCase().indexOf(q) >= 0;
+    });
+    if (!q) xs = xs.slice(0, 12);
+    if (xs.length) {
+      out += '<div class="sec">' + (q ? "Matches" : "Recent") + "</div>" + xs.map(function (s) {
+        var meta = [s.author, s.n ? s.n + (s.n === 1 ? " highlight" : " highlights") : ""].filter(Boolean).join(" · ");
+        return '<button class="opt' + (s.id === h.sourceId ? " on" : "") + '" data-id="' + esc(s.id) + '"><div class="txt">' +
+          '<div class="t">' + esc(srcTitle(s)) + "</div>" + (meta ? '<div class="m">' + esc(meta) + "</div>" : "") + "</div>" + TICK + "</button>";
+      }).join("");
+    } else if (q) out += '<div class="none">No source matches. <button class="opt new" data-act="new">' + PLUS +
+        '<div class="txt"><div class="t">Add “' + esc($("q").value.trim()) + '”</div></div></button></div>';
+    $("list").innerHTML = out;
+  }
+  function view(v) {
+    $("mainView").hidden = v !== "main"; $("pickView").hidden = v !== "pick"; $("newView").hidden = v !== "new";
+    $("card").scrollTop = 0;
+    if (v === "pick") { $("q").value = ""; $("q").hidden = sources.length < 7; paintList(); }
+    if (v === "new") { $("nTitle").value = $("q").value.trim(); $("nAuthor").value = ""; $("nAdd").disabled = !$("nTitle").value; setTimeout(function () { $("nTitle").focus(); }, 50); }
+  }
+  $("from").onclick = function () { view("pick"); };
+  Array.prototype.forEach.call(document.querySelectorAll(".backb"), function (b) {
+    b.onclick = function () { view($("newView").hidden ? "main" : "pick"); };
+  });
+  $("q").oninput = paintList;
+  $("list").onclick = function (e) {
+    var b = e.target.closest("[data-id],[data-act]"); if (!b) return;
+    if (b.dataset.act === "new") { view("new"); return; }
+    h.sourceId = b.dataset.id; d.guessed = false; save(true); paintFrom(); view("main");
+  };
+  $("nTitle").oninput = function () { $("nAdd").disabled = !this.value.trim(); };
+  $("nCancel").onclick = function () { view("pick"); };
+  $("nAdd").onclick = function () {
+    var t = $("nTitle").value.trim(); if (!t) return;
+    var r = A.newSource(t, $("nAuthor").value.trim()); if (!r) return;
+    var s = JSON.parse(r); s.n = 0; sources.unshift(s);
+    h.sourceId = s.id; d.guessed = false; save(true); paintFrom(); view("main");
+  };
+
+  window.handleBack = function () {
+    if (!$("newView").hidden) { view("pick"); return true; }
+    if (!$("pickView").hidden) { view("main"); return true; }
+    return false;
+  };
+  $("undo").onclick = function () { gone = true; clearTimeout(timer); A.undo(); };
+  $("done").onclick = $("scrim").onclick = function () { if ($("tagIn").value.trim()) addTag($("tagIn").value); window.flush(); A.close(); };
+
+  paintFrom(); paintTags();
+})();
+</script>
+</body>
+</html>

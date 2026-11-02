@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppTheme" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:colorPrimary">#2F4858</item>
+        <item name="android:colorPrimaryDark">#2F4858</item>
+        <item name="android:colorAccent">#E07A3F</item>
+        <item name="android:windowBackground">#F6F3EE</item>
+    </style>
+    <style name="ShareTheme" parent="android:Theme.Translucent.NoTitleBar">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:windowAnimationStyle">@null</item>
+    </style>
+</resources>
