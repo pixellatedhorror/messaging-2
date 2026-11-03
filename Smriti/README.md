@@ -2,10 +2,43 @@
 
 *Smṛti* means "memory, what is remembered": the app is a record of what you've read and what you thought of it.
 
-Brainstorm only. Nothing is built yet.
+Version 1.0 is built (`./build.sh` → `Smriti.apk`). The design notes it was built from are kept below.
+
+## Using it
+* **+** → search Open Library. One box takes a title, an author or an ISBN; `author:`, `title:` or `isbn:` forces one.
+  Pick the book, then the edition (it sets the cover and page count), or **Type it in yourself**.
+* **Book page**: **Start reading** (choose print / ebook / audiobook and the length), **Log progress**, the quick
+  buttons (+10 / +25 pages, +1 / +5 %, +15 / +30 min), **Finished**, **Abandon**, journal **Note**.
+  Finishing (or abandoning) opens the rating: stars, verdict, mood tags, category scores and final thoughts.
+  Tap a past read to re-rate it, add a journal entry, or edit its dates, format and progress log.
+  **Start a reread** gives the same book a new read with its own dates, rating and journal.
+* **Home**: what you're reading now, with quick logging, and your recently finished books.
+* **Library**: filter by status (worked out from your reads) or shelf, sort, search. **Edit shelves** to add,
+  rename, reorder or delete shelves.
+* **Stats**: per year or all time. Books finished (rereads included and noted), pages read, hours listened and
+  average days per book; per-month charts (tap a bar for its value); longest/shortest; authors, verdicts,
+  category averages, mood tags, shelves. **Year in review** from there.
+* **Settings** (gear): switch rating layers on/off; edit score categories, verdicts and mood tags (renaming updates
+  past ratings); backup / restore.
+
+### Notes
+* Data: one JSON file in the app's private storage (`smriti.json`, previous version kept as `smriti.json.prev`).
+* Covers are downloaded from Open Library the first time they're shown and kept on the phone. Backups don't include
+  them; they download again after a restore.
+* Restore can **merge** (adds what isn't already there) or **replace**.
+* Not yet tested against the live Open Library API (the build sandbox couldn't reach it); tested with sample
+  responses in the API's documented shape.
+
+## Building
+Same toolchain as Margins, no Gradle: `./build.sh` (aapt2 → javac → dx → zipalign → apksigner). Needs Ubuntu's
+`aapt apksigner zipalign dalvik-exchange android-sdk-platform-23` packages; `ANDROID_JAR` defaults to the API 23
+`android.jar` they install (compile only: the app targets API 34, min 24). `release.keystore` is the signing key:
+keep it, or later versions won't install over this one.
 
 A private reading tracker for Android. No account, no feed, no other users. Everything stays on the phone.
 The only time it goes online is when you look up a book.
+
+# Design notes
 
 ## Decisions so far
 | Area | Decision |
