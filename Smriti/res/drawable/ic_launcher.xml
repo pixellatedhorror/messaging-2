@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="#3B3561" android:pathData="M54,4a50,50 0 1,0 0.01,0z"/>
+    <!-- lamp flame (memory) -->
+    <path android:fillColor="#D98E04" android:pathData="M54,18c5,7 8,11 8,16a8,8 0 0,1 -16,0c0,-5 3,-9 8,-16z"/>
+    <path android:fillColor="#F4C25B" android:pathData="M54,27c2.5,3.5 4,5.5 4,8a4,4 0 0,1 -8,0c0,-2.5 1.5,-4.5 4,-8z"/>
+    <!-- open book -->
+    <path android:fillColor="#F7F3EC" android:pathData="M24,50c11,-3 22,-1 29,5v32c-7,-6 -18,-8 -29,-5z"/>
+    <path android:fillColor="#F7F3EC" android:pathData="M84,50c-11,-3 -22,-1 -29,5v32c7,-6 18,-8 29,-5z"/>
+    <path android:fillColor="#3B3561" android:pathData="M30,60c7,-1 13,0 18,3v2.5c-5,-3 -11,-4 -18,-3zM30,68c7,-1 13,0 18,3v2.5c-5,-3 -11,-4 -18,-3zM78,60c-7,-1 -13,0 -18,3v2.5c5,-3 11,-4 18,-3zM78,68c-7,-1 -13,0 -18,3v2.5c5,-3 11,-4 18,-3z"/>
+</vector>
