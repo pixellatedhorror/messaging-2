@@ -1,4 +1,6 @@
-# Stacks (working name): a personal Goodreads
+# Smriti (स्मृति): a personal Goodreads
+
+*Smṛti* means "memory, what is remembered": the app is a record of what you've read and what you thought of it.
 
 Brainstorm only. Nothing is built yet.
 
@@ -90,19 +92,10 @@ Settings  categories[], verdicts[], moods[], layers on/off
 ```
 Status of a book = from its latest read: none → not started, in progress → reading, finished, or abandoned.
 
-## Name (undecided)
-Sanskrit candidates:
-| Name | Script | Meaning | Why it fits |
-|---|---|---|---|
-| **Svādhyāya** | स्वाध्याय | self-study; one's own reading | A private reading practice. The leading pick |
-| **Bhāṣya** | भाष्य | commentary on a text | Your journal and ratings are your commentary on each book |
-| **Granthālaya** | ग्रन्थालय | library, "home of books" | Literal, and it reads like a library |
-| **Anukramaṇī** | अनुक्रमणी | index / catalogue of texts | The old Vedic catalogues. Fits custom shelves |
-| **Pāṭha** | पाठ | reading, a reading of a text | Short. Each reread is another pāṭha |
-| **Smṛti** | स्मृति | memory, what is remembered | The journal, and remembering what you read |
-| **Kośa** | कोश | treasury; also a lexicon | A treasury of books |
+## Name
+**Smriti** (स्मृति, *smṛti*): memory, what is remembered. The launcher label is "Smriti", without diacritics.
 
-Short app labels: *Svadhyaya*, *Bhashya*, *Patha*, *Kosha* (without diacritics for the launcher).
+Other candidates considered: Svādhyāya, Bhāṣya, Granthālaya, Anukramaṇī, Pāṭha, Kośa.
 
 ## Decided against
 - Yearly reading goals / targets.
